@@ -4,14 +4,17 @@
 #include <set>
 #include <map>
 #include <fstream>
+#include <stack>
 using namespace std;
 
 /**
 Author - Anant Kumar Singh
 Description : 	Reads a given context free grammar 
-				from a text file and parse a LL(1) parser 
-				out of it to check whether the input 
-				string can be parsed from it or not.
+				from a text file and build a LL(1) parser 
+				out of it by computing first and follow 
+				sets to check whether the input 
+				string can be parsed from given 
+				grammar or not.
 */
 
 //util function to prevent repetitions while inserting
@@ -122,6 +125,73 @@ void Follow(char V, map<char,vector<string> >& gr, map<char,vector<char> >& firs
 		}
 	}
 }
+// void getSymbols(map <char,vector < string > >& gr, vector<char>& T, vector<char>& NT){
+// 	for(map <char,vector < string > >:: iterator it = gr.begin();it!=gr.end();++it){
+// 		uniqueInsert(T,it->first);
+// 		int n = it->second.size();
+// 		for(int p=0;p<n;++p){
+// 			string s = it->second[p];
+// 			int len = s.length();
+// 			for(int i=0;i<len;++i)
+// 				if(s[i] != '^' && !isupper(s[i]))
+// 					uniqueInsert(NT,s[i]);
+// 		}
+// 	}
+// 	for(int i=0;i<T.size();++i)cout<<T[i]<<' ';cout<<endl;
+// 	for(int i=0;i<NT.size();++i)cout<<NT[i]<<' ';cout<<'$'<<endl;
+// }
+
+vector<char> firstOfString(map<char,vector<char> >& first, string prod){
+	vector<char> ans;
+	int len = prod.length();
+	bool hadnull = 1;
+	for(int i=0;i<len;++i){
+		if(!hadnull) break;
+		//else
+		hadnull = 0;
+		if(isupper(prod[i])){
+			for(int j=0;j<first[prod[i]].size();++j){
+				if(first[prod[i]][j]=='^')hadnull=1;
+				uniqueInsert(ans,first[prod[i]][j]);
+			}
+		}
+		else
+			uniqueInsert(ans,prod[i]);
+	}
+	return ans;
+}
+
+#define pcc pair<char,char>
+	
+void createParseTable(map<pcc,string >&ptable, map <char,vector<string> >& gr, map<char,vector<char> >& first, map<char,set<char> >& follow){
+	for(map <char,vector < string > >:: iterator it = gr.begin();it!=gr.end();++it){
+		// cout<<"for: "<<it->first<<endl;
+		int n = it->second.size();
+		for(int p=0;p<n;++p){
+			// cout<<it->second[p]<<endl;
+			vector<char> v = firstOfString(first,it->second[p]);
+			// cout<<"first of "<<it->second[p]<<": ";
+			// for(int i=0;i<v.size();++i)cout<<v[i]<<'.';cout<<endl;
+			bool null = 0;
+			// cout<<"inserting : ";
+			for(int i=0;i<v.size();++i)
+				if(v[i]!='^')	{
+					// cout<<v[i]<<',';
+								ptable[make_pair(it->first,v[i])]=it->second[p];}
+				else null=1;
+			if(null){
+				set < char > :: iterator ft,z;
+				z = follow[it->first].end();
+				// cout<<"\nnull inserting : ";
+				for(ft=follow[it->first].begin();ft!=z;++ft)
+					// {cout<<*ft<<'_';
+					ptable[make_pair(it->first,*ft)]=it->second[p];
+					// }
+			}
+			// cout<<endl;
+		}
+	}
+}
 
 void print(map <char,vector < string > >& gr, map<char,vector<char> >& firstMap, map<char,set<char> >& followMap){
 	// Printing grammar
@@ -151,6 +221,40 @@ void print(map <char,vector < string > >& gr, map<char,vector<char> >& firstMap,
 		printSet(followMap[it->first],0);
 		cout<<"}"<<endl;
 	}
+}
+
+void reversePush(string s, stack<char> &st){
+	int len = s.length();
+	for(int i=len-1;i>=0;--i)
+		st.push(s[i]);
+}
+
+bool parse(string s, char start, map<pcc,string> & ptable){
+	stack<char>st;
+	st.push('$');
+	st.push(start);
+	s+="$";
+	int i=0,len = s.length();
+	while(i<len)
+		if(isupper(st.top())){
+			char Top = st.top();
+			// cout<<"Top:"<<Top<<endl;
+			if(ptable[make_pair(Top,s[i])]=="")return 0;
+			//else
+			st.pop();
+			if(ptable[make_pair(Top,s[i])] != "^"){
+				// cout<<"pushing:"<<ptable[make_pair(Top,s[i])]<<endl;
+				reversePush(ptable[make_pair(Top,s[i])],st);
+			}
+			// else cout<<"^ not pushed"<<endl;
+		}
+		else
+			if(s[i]!=st.top())return 0;
+			else{
+				st.pop();
+				++i;
+			}
+	return 1;
 }
 
 int main(int argc,char * argv[]){
@@ -211,8 +315,23 @@ int main(int argc,char * argv[]){
 	while(times--)
 	for(it=gr.begin();it!=gr.end();++it)
 		Follow(it->first,gr,firstMap,followMap);
-	
+	// T.push_back('$');
+	// Printing grammar, first and follow
 	print(gr,firstMap,followMap);
+	//Parse Table construction
+	map<pair<char,char>,string> parseTable;
+	createParseTable(parseTable,gr,firstMap,followMap);
+	cout<<"Enter number of strings to be checked : ";
+	int tests;
+	cin>>tests;
+	while(tests--){
+		cout<<"Enter the string to be checked : ";
+		string in;
+		cin>>in;
+		if(parse(in,start,parseTable))cout<<"input string parsed successfully!\n";
+		else cout<<"input string cannot be parsed!\n";
+	}
+
 }
 
 
