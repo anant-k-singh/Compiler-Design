@@ -74,7 +74,6 @@ bool First(char V, map<char,vector<string> >& gr, map<char,vector<char> >& F){
 
 // finds follow of V by searching in all of the grammar
 void Follow(char V, map<char,vector<string> >& gr, map<char,vector<char> >& first, map<char,set<char> >& follow){
-	// cout<<"Follow of "<<V<<endl;
 	map <char,vector < string > >:: iterator it,it2;
 	set < char > :: iterator ft;
 	for(it = gr.begin();it!=gr.end();++it){
@@ -84,62 +83,31 @@ void Follow(char V, map<char,vector<string> >& gr, map<char,vector<char> >& firs
 			char next;
 			for(int i=0;i<len;++i){
 				if(s[i]==V){
-					// cout<<"found in "<<it->first<<" @ "<<p<<','<<i<<endl;
 					g:;
 					bool hasnull = 0;
 					if(i+1<len){
 						next = s[i+1];
 						if(isupper(next)!=0){
-							// cout<<"next="<<next<<'-'<<first[next].size()<<endl;
 							// insert first of s[i+1]
-							for(int j=0;j<first[next].size();++j){
+							for(int j=0;j<first[next].size();++j)
 								if(first[next][j] == '^')	hasnull = 1;
-								else{
-									// cout<<"."<<first[next][j]<<endl;
-									follow[V].insert(first[next][j]);
-								}
-							}
+								else follow[V].insert(first[next][j]);
 							++i;
-							if(hasnull){
-								// cout<<"first of "<<s[i]<<" had ε\n";
-								goto g;
-							}
+							if(hasnull)	goto g;
 						}
-						else{
-							// cout<<'.'<<next<<endl;
-							follow[V].insert(next);}
+						else
+							follow[V].insert(next);
 					}
 					// last in production
-					else{
-						// insert follow of it->first
-						// cout<<"inserting follow of "<<it->first<<'-'<<follow[it->first].size()<<endl;
+					else
 						for(ft=follow[it->first].begin(); ft != follow[it->first].end(); ++ft)
-							if(*ft != '^'){
-								// cout<<*ft<<' ';
+							if(*ft != '^')
 								follow[V].insert(*ft);
-							}
-						// cout<<endl;
-					}
 				}
 			}
 		}
 	}
 }
-// void getSymbols(map <char,vector < string > >& gr, vector<char>& T, vector<char>& NT){
-// 	for(map <char,vector < string > >:: iterator it = gr.begin();it!=gr.end();++it){
-// 		uniqueInsert(T,it->first);
-// 		int n = it->second.size();
-// 		for(int p=0;p<n;++p){
-// 			string s = it->second[p];
-// 			int len = s.length();
-// 			for(int i=0;i<len;++i)
-// 				if(s[i] != '^' && !isupper(s[i]))
-// 					uniqueInsert(NT,s[i]);
-// 		}
-// 	}
-// 	for(int i=0;i<T.size();++i)cout<<T[i]<<' ';cout<<endl;
-// 	for(int i=0;i<NT.size();++i)cout<<NT[i]<<' ';cout<<'$'<<endl;
-// }
 
 vector<char> firstOfString(map<char,vector<char> >& first, string prod){
 	vector<char> ans;
@@ -162,33 +130,21 @@ vector<char> firstOfString(map<char,vector<char> >& first, string prod){
 }
 
 #define pcc pair<char,char>
-	
 void createParseTable(map<pcc,string >&ptable, map <char,vector<string> >& gr, map<char,vector<char> >& first, map<char,set<char> >& follow){
 	for(map <char,vector < string > >:: iterator it = gr.begin();it!=gr.end();++it){
-		// cout<<"for: "<<it->first<<endl;
 		int n = it->second.size();
 		for(int p=0;p<n;++p){
-			// cout<<it->second[p]<<endl;
 			vector<char> v = firstOfString(first,it->second[p]);
-			// cout<<"first of "<<it->second[p]<<": ";
-			// for(int i=0;i<v.size();++i)cout<<v[i]<<'.';cout<<endl;
 			bool null = 0;
-			// cout<<"inserting : ";
 			for(int i=0;i<v.size();++i)
-				if(v[i]!='^')	{
-					// cout<<v[i]<<',';
-								ptable[make_pair(it->first,v[i])]=it->second[p];}
+				if(v[i]!='^')
+					ptable[make_pair(it->first,v[i])]=it->second[p];
 				else null=1;
 			if(null){
-				set < char > :: iterator ft,z;
-				z = follow[it->first].end();
-				// cout<<"\nnull inserting : ";
+				set < char > :: iterator ft, z = follow[it->first].end();
 				for(ft=follow[it->first].begin();ft!=z;++ft)
-					// {cout<<*ft<<'_';
 					ptable[make_pair(it->first,*ft)]=it->second[p];
-					// }
 			}
-			// cout<<endl;
 		}
 	}
 }
@@ -238,15 +194,11 @@ bool parse(string s, char start, map<pcc,string> & ptable){
 	while(i<len)
 		if(isupper(st.top())){
 			char Top = st.top();
-			// cout<<"Top:"<<Top<<endl;
 			if(ptable[make_pair(Top,s[i])]=="")return 0;
-			//else
 			st.pop();
-			if(ptable[make_pair(Top,s[i])] != "^"){
-				// cout<<"pushing:"<<ptable[make_pair(Top,s[i])]<<endl;
+			if(ptable[make_pair(Top,s[i])] != "^")
 				reversePush(ptable[make_pair(Top,s[i])],st);
-			}
-			// else cout<<"^ not pushed"<<endl;
+			
 		}
 		else
 			if(s[i]!=st.top())return 0;
@@ -264,6 +216,7 @@ int main(int argc,char * argv[]){
 	map <char,vector < string > > gr;
 	map <char,vector < char > > firstMap;
 	map <char,set < char > > followMap;
+	map <char,vector < string > > :: iterator it;
 	char c;
 	int n,st,flag=0;
 	if(G.is_open()){
@@ -306,16 +259,15 @@ int main(int argc,char * argv[]){
 	char start = gr.begin()->first;
 	G.close();
 	if(flag) return 0;
-
-	map <char,vector < string > > :: iterator it;
-	for(it=gr.begin();it!=gr.end();it++)
-		First(it->first,gr,firstMap);
+	// Find first of all non terminals
+	for(it=gr.begin();it!=gr.end();it++) First(it->first,gr,firstMap);
+	// Find follow of all non terminals
 	followMap[start].insert('$');
 	int times = 2;
 	while(times--)
 	for(it=gr.begin();it!=gr.end();++it)
 		Follow(it->first,gr,firstMap,followMap);
-	// T.push_back('$');
+
 	// Printing grammar, first and follow
 	print(gr,firstMap,followMap);
 	//Parse Table construction
@@ -328,13 +280,7 @@ int main(int argc,char * argv[]){
 		cout<<"Enter the string to be checked : ";
 		string in;
 		cin>>in;
-		if(parse(in,start,parseTable))cout<<"input string parsed successfully!\n";
-		else cout<<"input string cannot be parsed!\n";
+		if(parse(in,start,parseTable))cout<<"Input string parsed successfully!\n";
+		else cout<<"Input string cannot be parsed!\n";
 	}
-
 }
-
-
-
-
-
