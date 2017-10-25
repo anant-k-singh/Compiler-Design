@@ -1,3 +1,19 @@
+/**
+ Author - Anant Kumar Singh
+ Description : 	Reads a given context free grammar 
+				from a text file and build a LL(1) parser 
+				out of it by computing first and follow 
+				sets to check whether the input 
+				string can be parsed from given 
+				grammar or not.
+ Grammar example : 	S -> TG
+					G -> +TG
+					G -> ^
+					T -> FU
+					U -> *FU|^
+					F -> (S)|e
+*/
+
 #include <iostream>
 #include <vector>
 #include <algorithm>
@@ -6,16 +22,6 @@
 #include <fstream>
 #include <stack>
 using namespace std;
-
-/**
-Author - Anant Kumar Singh
-Description : 	Reads a given context free grammar 
-				from a text file and build a LL(1) parser 
-				out of it by computing first and follow 
-				sets to check whether the input 
-				string can be parsed from given 
-				grammar or not.
-*/
 
 //util function to prevent repetitions while inserting
 void uniqueInsert(vector<char> &v, char c){
