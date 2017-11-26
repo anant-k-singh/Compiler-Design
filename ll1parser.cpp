@@ -1,11 +1,11 @@
 /**
  Author - Anant Kumar Singh
  Description : 	Reads a given context free grammar 
-				from a text file and build a LL(1) parser 
-				out of it by computing first and follow 
-				sets to check whether the input 
-				string can be parsed from given 
-				grammar or not.
+		from a text file and build a LL(1) parser 
+		out of it by computing first and follow 
+		sets to check whether the input 
+		string can be parsed from given 
+		grammar or not.
  Grammar example : 	S -> TG
 					G -> +TG
 					G -> ^
