@@ -7,11 +7,11 @@
 		string can be parsed from given 
 		grammar or not.
  Grammar example : 	S -> TG
-					G -> +TG
-					G -> ^
-					T -> FU
-					U -> *FU|^
-					F -> (S)|e
+			G -> +TG
+			G -> ^
+			T -> FU
+			U -> *FU|^
+			F -> (S)|e
 */
 
 #include <iostream>
